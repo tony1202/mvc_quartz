@@ -1,9 +1,11 @@
 package com.tony.controller;
 
-import com.tony.quartz.QuartzJobFactory;
+import com.tony.User;
+import com.tony.quartz.QuartzJob;
 import com.tony.quartz.QuartzManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,10 +20,26 @@ public class QuartzController {
 
     @RequestMapping("/test")
     @ResponseBody
-    public String test(){
+    public String test(String jName,String tName){
 
-        quartzManager.addJob("tony","trigger", QuartzJobFactory.class,"0/30 * 22 14 2 ? 2019");
+        quartzManager.addJob(jName,tName, QuartzJob.class,"0/5 * * * * ? 2019");
 
+        return "ok";
+    }
+
+
+    @RequestMapping("/test2")
+    @ResponseBody
+    public String test2(){
+        quartzManager.getjobs();
+
+        return "ok";
+    }
+
+    @RequestMapping("/test1")
+    @ResponseBody
+    public String test1(@RequestBody User[] users){
+        System.out.println(users.length);
         return "ok";
     }
 }

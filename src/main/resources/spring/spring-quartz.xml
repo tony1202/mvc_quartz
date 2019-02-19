@@ -17,23 +17,27 @@
                     <bean id="staticJobQuartz" class="com.tony.quartz.StaticJobQuartz"></bean>
                 </property>
                 <!-- 调用类中的方法  -->
-                <property name="targetMethod" value="execute" />
+                <property name="targetMethod" value="execute"/>
                 <!-- 是否并发  -->
-                <property name ="concurrent" value ="true"  />
+                <property name="concurrent" value="true"/>
             </bean>
         </property>
         <!-- cron表达式  -->
-        <property name="cronExpression" value="0/10 * * * * ?" />
+        <property name="cronExpression" value="0/10 * * * * ?"/>
     </bean>
 
     <!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序  -->
-    <bean id="startQuertz" lazy-init="true" autowire="no" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-        <property name="triggers">
-            <list>
-                <ref bean="cronTrigger" />
-            </list>
-        </property>
+    <bean id="startQuartz" lazy-init="true" autowire="no"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <!--<property name="triggers">-->
+        <!--<list>-->
+        <!--<ref bean="cronTrigger" />-->
+        <!--</list>-->
+        <!--</property>-->
+        <property name="jobFactory" ref="myJobFactory"/>
+        <property name="startupDelay" value="10"/>
     </bean>
-
+    <bean id="springJobFactory" class="org.springframework.scheduling.quartz.SpringBeanJobFactory"/>
+    <bean id="myJobFactory" class="com.tony.quartz.MyJobFactory"/>
     <bean id="schedulerFactory" class="org.quartz.impl.StdSchedulerFactory"/>
 </beans>

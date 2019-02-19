@@ -1,11 +1,14 @@
 package com.tony.quartz;
 
 import com.tony.common.Constants;
+import com.tony.service.UserService;
 import org.quartz.*;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Set;
 
 /**
  * 定时任务动态加载
@@ -16,9 +19,13 @@ public class QuartzManager {
     /**
      * 调度工厂
      */
+//    @Autowired
+//    private SchedulerFactory schedulerFactory;
     @Autowired
-    private SchedulerFactory schedulerFactory;
+    private Scheduler sched;
 
+    @Autowired
+    private UserService userService;
     /**
      * @Description: 添加一个定时任务
      *
@@ -30,7 +37,7 @@ public class QuartzManager {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void addJob(String jobName, String triggerName, Class jobClass, String cron) {
         try {
-            Scheduler scheduled = schedulerFactory.getScheduler();
+//            Scheduler sched = schedulerFactory.getScheduler();
             // 任务名，任务组，任务执行类
             JobDetail jobDetail= JobBuilder.newJob(jobClass).withIdentity(jobName, Constants.JOB_GROUP_NAME).build();
             // 触发器
@@ -44,10 +51,10 @@ public class QuartzManager {
             // 创建Trigger对象
             CronTrigger trigger = (CronTrigger) triggerBuilder.build();
             // 调度容器设置JobDetail和Trigger
-            scheduled.scheduleJob(jobDetail, trigger);
+            sched.scheduleJob(jobDetail, trigger);
             // 启动
-            if (!scheduled.isShutdown()) {
-                scheduled.start();
+            if (!sched.isShutdown()) {
+                sched.start();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -61,7 +68,7 @@ public class QuartzManager {
      */
     public void modifyJobTime(String triggerName, String cron) {
         try {
-            Scheduler sched = schedulerFactory.getScheduler();
+//            Scheduler sched = schedulerFactory.getScheduler();
             TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, Constants.TRIGGER_GROUP_NAME);
             CronTrigger trigger = (CronTrigger) sched.getTrigger(triggerKey);
             if (trigger == null) {
@@ -105,7 +112,7 @@ public class QuartzManager {
     public void removeJob(String jobName, String jobGroupName,
                                  String triggerName, String triggerGroupName) {
         try {
-            Scheduler sched = schedulerFactory.getScheduler();
+//            Scheduler sched = schedulerFactory.getScheduler();
 
             TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
             // 停止触发器
@@ -124,7 +131,7 @@ public class QuartzManager {
      */
     public void startJobs() {
         try {
-            Scheduler sched = schedulerFactory.getScheduler();
+//            Scheduler sched = schedulerFactory.getScheduler();
             sched.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -136,7 +143,7 @@ public class QuartzManager {
      */
     public void shutdownJobs() {
         try {
-            Scheduler sched = schedulerFactory.getScheduler();
+//            Scheduler sched = schedulerFactory.getScheduler();
             if (!sched.isShutdown()) {
                 sched.shutdown();
             }
@@ -149,6 +156,19 @@ public class QuartzManager {
     private void init(){
 //        Todo init
         System.out.println("初始化完成");
-        addJob("execute", "动态任务触发器", QuartzJobFactory.class, "0/5 * * * * ? ");
+        //addJob("execute", "动态任务触发器", QuartzJob.class, "0/5 * * * * ? ");
+    }
+
+    public int getjobs(){
+        try {
+//            Scheduler sched = schedulerFactory.getScheduler();
+            GroupMatcher<JobKey> matcher = GroupMatcher.jobGroupEquals(Constants.JOB_GROUP_NAME);
+            Set<JobKey> jobKeys = sched.getJobKeys(matcher);
+            return jobKeys.size();
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+            return 1;
+        }
+
     }
 }
